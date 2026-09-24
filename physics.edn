@@ -1,0 +1,35 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a printing, binding and certified-copy robot
+;; performs document printing, binding and certified-copy production.
+;; Declared here: thermal (hot-melt) binding -- the heater plate has to melt
+;; the glue strip in the cover spine through its thickness so it wets the
+;; page edges (the thin cover card itself heats through in seconds) -- and
+;; the bound set moved to the output tray.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-4414"
+ :cases
+ [{:id :thermal-binding-glue-melt
+   :kind :thermal
+   :procedure "heater plate at 170 C presses the cover spine; the hot-melt glue strip has to reach wetting temperature on the page-edge side"
+   :params {:conductivity-w-mk 0.30 :density-kg-m3 950.0 :specific-heat-j-kgk 2300.0
+            :t0-c 20.0 :t-hot-c 170.0 :front-fixed? true
+            :t-back-ambient-c 20.0 :h-back-w-m2k 10.0
+            :threshold-c 120.0 :duration-s 300.0 :nodes 11}
+   :sweep {:param :thickness-m :values [0.0008 0.0012 0.0016 0.0020 0.0025 0.0030]}
+   :quantity :time-to-threshold-s
+   :limit {:max 60.0 :basis "estimate: a binding cycle short enough for counter-service turnaround; EVA hot-melt properties and the 120 C wetting temperature are also estimates"}
+   :boundary {:lo 0.0005 :hi 0.005}}
+  {:id :bound-set-to-output-tray
+   :kind :manipulator
+   :procedure "arm lifts a bound document set from the binder onto the output tray"
+   :params {:l1-m 0.40 :l2-m 0.35 :m1-kg 3.0 :m2-kg 2.0
+            :from [0.45 0.00] :to [0.10 0.40] :duration-s 1.5 :steps 500}
+   :sweep {:param :payload-kg :values [0.3 1.0 2.0 3.5 5.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 30.0 :basis "estimate: continuous shoulder torque of a ~3 kg-payload desktop collaborative arm"}
+   :boundary {:lo 0.1 :hi 15.0}}]}
